@@ -10,7 +10,7 @@
 // D1  -> SCL
 // D2  -> SDA
 
-const char *headline = "POWERMETER 1.0";
+const char *appname = "CC-POWERMETER";
 
 // SSD1306 Controller, Mode F = Full screen buffer mode, u8g2(orientation, clock, data)
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R2, D1, D2);
