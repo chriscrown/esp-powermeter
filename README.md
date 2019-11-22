@@ -12,5 +12,7 @@ I wanted to create a little display for showing the current power consumption in
 
 I'm not a big C-guy, so any contribution os appreciated! :-)
 
+I built this project with PlatformIO (see: https://platformio.org/). I really recommend this environment for any beginner, the setup is really easy and you're up and running in minutes!
+
 ![Prototype](docs/prototype.jpg)
 ![Housing](docs/housing.jpg)
