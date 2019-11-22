@@ -50,13 +50,15 @@ void print_status(const char *text)
 
 void setup_wifi()
 {
+  const char* menuline = "WiFi-Setup";
+  
   delay(10);
   Serial.println();
   Serial.print("Connecting to ");
   Serial.println(ssid);
 
   u8g2.clearBuffer();
-  print_menuline("WiFi-Setup");
+  print_menuline(menuline);
   print_status("Connecting...");
   u8g2.sendBuffer();
 
@@ -76,7 +78,7 @@ void setup_wifi()
   Serial.println(WiFi.localIP());
 
   u8g2.clearBuffer();
-  print_menuline("WiFi-Setup");
+  print_menuline(menuline);
   print_status("Success!");
   u8g2.sendBuffer();
 }
@@ -107,20 +109,15 @@ void callback(char *topic, byte *payload, unsigned int length)
 
 void reconnect()
 {
+  const char* menuline = "MQTT-Setup";
+
   // Loop until we're reconnected
   while (!client.connected())
   {
     Serial.print("Attempting MQTT connection...");
 
     u8g2.clearBuffer();
-    u8g2.setFont(u8g2_font_bitcasual_t_all);
-    u8g2.drawStr(47, 8, "MQTT");
-    u8g2.setFont(u8g2_font_tenthinguys_tf);
-    u8g2.drawStr(20, 30, "MQTT-Setup...");
-    u8g2.sendBuffer();
-
-    u8g2.clearBuffer();
-    print_menuline("MQTT-Setup");
+    print_menuline(menuline);
     print_status("Connecting...");
     u8g2.sendBuffer();
 
@@ -134,7 +131,7 @@ void reconnect()
       Serial.println(" connected!");
 
       u8g2.clearBuffer();
-      print_menuline("MQTT-Setup");
+      print_menuline(menuline);
       print_status("Success!");
       u8g2.sendBuffer();
 
@@ -150,7 +147,7 @@ void reconnect()
       Serial.println(" try again in 5 seconds");
 
       u8g2.clearBuffer();
-      print_menuline("MQTT-Setup");
+      print_menuline(menuline);
       u8g2.setFont(u8g2_font_bitcasual_t_all);
       u8g2.setCursor(ALIGN_CENTER("Error!"), 22);
       u8g2.print("Error!");
