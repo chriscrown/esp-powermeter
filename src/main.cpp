@@ -4,6 +4,12 @@
 #include <ESP8266WiFi.h>
 #include "settings.h"
 
+// Wemos D1 mini pro
+// VCC -> 3,3V
+// GND -> GND
+// D1  -> SCL
+// D2  -> SDA
+
 const char *headline = "POWERMETER 1.0";
 
 // SSD1306 Controller, Mode F = Full screen buffer mode, u8g2(orientation, clock, data)
