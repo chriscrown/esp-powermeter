@@ -13,7 +13,7 @@
 const char *headline = "POWERMETER 1.0";
 
 // SSD1306 Controller, Mode F = Full screen buffer mode, u8g2(orientation, clock, data)
-U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, D1, D2);
+U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R2, D1, D2);
 
 // alternative:
 
@@ -23,11 +23,30 @@ U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, D1, D2);
 // SSD1306 Controller, 8x8 Mode
 //U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(D1, D2);
 
+#define LCDWidth u8g2.getDisplayWidth()
+#define ALIGN_CENTER(t) ((LCDWidth - (u8g2.getUTF8Width(t))) / 2)
+#define ALIGN_RIGHT(t) (LCDWidth - u8g2.getUTF8Width(t))
+#define ALIGN_LEFT 0
+
 WiFiClient espClient;
 PubSubClient client(espClient);
 long lastMsg = 0;
 char msg[50];
 int value = 0;
+
+void print_menuline(const char *text)
+{
+  u8g2.setFont(u8g2_font_tenthinguys_tf);
+  u8g2.setCursor(ALIGN_CENTER(text), 63);
+  u8g2.print(text);
+}
+
+void print_status(const char *text)
+{
+  u8g2.setFont(u8g2_font_bitcasual_t_all);
+  u8g2.setCursor(ALIGN_CENTER(text), 32);
+  u8g2.print(text);
+}
 
 void setup_wifi()
 {
@@ -37,10 +56,8 @@ void setup_wifi()
   Serial.println(ssid);
 
   u8g2.clearBuffer();
-  u8g2.setFont(u8g2_font_bitcasual_t_all);
-  u8g2.drawStr(49, 8, "WiFi");
-  u8g2.setFont(u8g2_font_tenthinguys_tf);
-  u8g2.drawStr(20, 30, "WiFi-Setup...");
+  print_menuline("WiFi-Setup");
+  print_status("Connecting...");
   u8g2.sendBuffer();
 
   WiFi.begin(ssid, password);
@@ -59,10 +76,8 @@ void setup_wifi()
   Serial.println(WiFi.localIP());
 
   u8g2.clearBuffer();
-  u8g2.setFont(u8g2_font_bitcasual_t_all);
-  u8g2.drawStr(49, 8, "WiFi");
-  u8g2.setFont(u8g2_font_tenthinguys_tf);
-  u8g2.drawStr(20, 30, "Connected!");
+  print_menuline("WiFi-Setup");
+  print_status("Success!");
   u8g2.sendBuffer();
 }
 
@@ -82,18 +97,12 @@ void callback(char *topic, byte *payload, unsigned int length)
   output[length + 1] = 0;
   Serial.println();
 
-  int fill = 5 - (int)length; // max 5 digits
-
-  // payload detected
-  if ((char)payload[0])
-  {
-    u8g2.clearBuffer();
-    u8g2.setFont(u8g2_font_bitcasual_t_all);
-    u8g2.drawStr(10, 8, headline);
-    u8g2.setFont(u8g2_font_logisoso32_tf);
-    u8g2.drawStr(fill * 13, 55, output);
-    u8g2.sendBuffer();
-  }
+  u8g2.clearBuffer();
+  print_menuline(appname);
+  u8g2.setFont(u8g2_font_logisoso32_tf);
+  u8g2.setCursor(ALIGN_CENTER(output), 42);
+  u8g2.print(output);
+  u8g2.sendBuffer();
 }
 
 void reconnect()
@@ -110,6 +119,11 @@ void reconnect()
     u8g2.drawStr(20, 30, "MQTT-Setup...");
     u8g2.sendBuffer();
 
+    u8g2.clearBuffer();
+    print_menuline("MQTT-Setup");
+    print_status("Connecting...");
+    u8g2.sendBuffer();
+
     // Create a random client ID
     String clientId = "ESP-PowerMeter-";
     clientId += String(random(0xffff), HEX);
@@ -120,10 +134,8 @@ void reconnect()
       Serial.println(" connected!");
 
       u8g2.clearBuffer();
-      u8g2.setFont(u8g2_font_bitcasual_t_all);
-      u8g2.drawStr(47, 8, "MQTT");
-      u8g2.setFont(u8g2_font_tenthinguys_tf);
-      u8g2.drawStr(20, 30, "Connected!");
+      print_menuline("MQTT-Setup");
+      print_status("Success!");
       u8g2.sendBuffer();
 
       // Once connected, publish an announcement...
@@ -136,6 +148,16 @@ void reconnect()
       Serial.print("failed, rc=");
       Serial.print(client.state());
       Serial.println(" try again in 5 seconds");
+
+      u8g2.clearBuffer();
+      print_menuline("MQTT-Setup");
+      u8g2.setFont(u8g2_font_bitcasual_t_all);
+      u8g2.setCursor(ALIGN_CENTER("Error!"), 22);
+      u8g2.print("Error!");
+      u8g2.setCursor(ALIGN_CENTER("Retry in 5s..."), 34);
+      u8g2.print("Retry in 5s...");
+      u8g2.sendBuffer();
+
       delay(5000);
     }
   }
@@ -147,6 +169,8 @@ void setup()
   delay(200);
   Serial.print("\n\n");
   u8g2.begin();
+  u8g2.enableUTF8Print();
+
   setup_wifi();
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
