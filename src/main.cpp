@@ -48,10 +48,56 @@ void print_status(const char *text)
   u8g2.print(text);
 }
 
+void print_power(int power)
+{
+  String outputStr = String(power) + "W";
+  char output[sizeof(outputStr)];
+  outputStr.toCharArray(output, sizeof(output));
+
+  u8g2.clearBuffer();
+  print_menuline(appname);
+  u8g2.setFont(u8g2_font_logisoso32_tf);
+  u8g2.setCursor(ALIGN_CENTER(output), 42);
+  u8g2.print(output);
+  u8g2.sendBuffer();
+}
+
+void print_costs(int power)
+{
+  double kWh = power / 1000.0;
+  double costsPerHour = costsPerkWh * kWh;
+  double fixCostsPerHour = costsPerMonth * 12.0 / 8760.0;
+
+  Serial.print("power: ");
+  Serial.println(power);
+  Serial.print("kWh: ");
+  Serial.println(kWh);
+  Serial.print("costsPerHour: ");
+  Serial.println(costsPerHour);
+  Serial.print("fixCostsPerHour: ");
+  Serial.println(fixCostsPerHour);
+
+  String outputStr = String(costsPerHour + fixCostsPerHour);
+  char output[sizeof(outputStr)];
+  outputStr.toCharArray(output, sizeof(output));
+
+  u8g2.clearBuffer();
+  print_menuline(appname);
+  u8g2.setFont(u8g2_font_logisoso32_tf);
+  u8g2.setCursor(10, 42);
+  u8g2.print(output);
+  u8g2.setFont(u8g2_font_bitcasual_t_all);
+  u8g2.setCursor(95, 26);
+  u8g2.print("EUR/");
+  u8g2.setCursor(95, 36);
+  u8g2.print("Std.");
+  u8g2.sendBuffer();
+}
+
 void setup_wifi()
 {
-  const char* menuline = "WiFi-Setup";
-  
+  const char *menuline = "WiFi-Setup";
+
   delay(10);
   Serial.println();
   Serial.print("Connecting to ");
@@ -89,27 +135,21 @@ void callback(char *topic, byte *payload, unsigned int length)
   Serial.print(topic);
   Serial.print("] ");
 
-  char output[length + 2];
+  char output[length + 1];
   for (int i = 0; i < (int)length; i++)
   {
     Serial.print((char)payload[i]);
     output[i] = (char)payload[i];
   }
-  output[length] = 'W';
-  output[length + 1] = 0;
   Serial.println();
-
-  u8g2.clearBuffer();
-  print_menuline(appname);
-  u8g2.setFont(u8g2_font_logisoso32_tf);
-  u8g2.setCursor(ALIGN_CENTER(output), 42);
-  u8g2.print(output);
-  u8g2.sendBuffer();
+  output[length] = 0;
+  int power = atoi(output);
+  print_power(power);
 }
 
 void reconnect()
 {
-  const char* menuline = "MQTT-Setup";
+  const char *menuline = "MQTT-Setup";
 
   // Loop until we're reconnected
   while (!client.connected())
@@ -167,6 +207,9 @@ void setup()
   Serial.print("\n\n");
   u8g2.begin();
   u8g2.enableUTF8Print();
+
+  //print_costs(515);
+  //print_power(554);
 
   setup_wifi();
   client.setServer(mqtt_server, 1883);

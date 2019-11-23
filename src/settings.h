@@ -7,3 +7,6 @@ const char *mqtt_user = "YourMqttUser";       // mqqt user
 const char *mqtt_pass = "YourMqttPassword";   // mqqt pw
 const char *inTopic = "YourPowerTopic";       // topic esp will subscribe to
 const char *outTopic = "YourOutputTopic";     // topic esp will send messages to
+
+double costsPerkWh = 0.2539;
+double costsPerMonth = 17.88;
